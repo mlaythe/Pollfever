@@ -1,27 +1,25 @@
 from django.shortcuts import get_object_or_404, render
-
 from django.http import HttpResponse, HttpResponseRedirect
-
 from django.urls import reverse
-
-from .models import Question
-
+from django.views import generic
 from django.db.models import F
 
-def index(request):
-  latest_question_list = Question.objects.order_by('-pub_date')[:5]
-  context = {
-    'latest_question_list': latest_question_list,
-  }
-  return render(request, 'pollfever/index.html', context)
+from .models import Choice, Question
 
-def detail(request, question_id):
-  question = get_object_or_404(Question, pk=question_id)
-  return render(request, 'pollfever/detail.html', { 'question': question })
+class IndexView(generic.ListView):
+  template_name = 'pollfever/index.html'
+  context_object_name = 'latest_question_list'
 
-def results(request, question_id):
-  question = get_object_or_404(Question, pk=question_id)
-  return render(request, 'pollfever/results.html', { 'question': question })
+  def get_queryset(self):
+    return Question.objects.order_by('-pub_date')[:5]
+
+class DetailView(generic.DetailView):
+  model = Question
+  template_name = 'pollfever/detail.html'
+
+class ResultsView (generic.DetailView):
+  model = Question
+  template_name = 'pollfever/results.html'
 
 def vote(request, question_id):
   question = get_object_or_404(Question, pk=question_id)
